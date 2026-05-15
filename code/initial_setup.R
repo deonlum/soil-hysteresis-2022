@@ -19,7 +19,7 @@ mycols = c("field" = "#316294",
 theme_set(theme_bw())
 
 ## 1.1 Reading in main dataset ====
-main_df = read.csv("./Dataset_S1.csv", stringsAsFactors = TRUE)
+main_df = read.csv("./data/Dataset_S1.csv", stringsAsFactors = TRUE)
 
 ## Ordering factors
 # timepoints
@@ -47,8 +47,8 @@ main_df$point_order = c(c(12:22, 1:11),
                         c(0,0,0,0,0,0,0,0,0))
 
 ## 1.2 Loading in sequencing datasets ====
-bac_seq_data = read.csv("Dataset_S2.csv")
-fun_seq_data = read.csv("Dataset_S3.csv")
+bac_seq_data = read.csv("./data/Dataset_S2.csv")
+fun_seq_data = read.csv("./data/Dataset_S3.csv")
 
 dim(bac_seq_data) # sequences are in the first column, with taxonomy from 121:127
 

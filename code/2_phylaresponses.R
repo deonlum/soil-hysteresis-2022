@@ -339,7 +339,7 @@ figS4_final = grid.arrange(figS4, bacphy_legendSI,
                      widths = c(5,1))
 plot(figS4_final)
 
-ggsave("./figures/figS4.svg", figS4_final, width=11, height=5)
+#ggsave("./figures/figS4.svg", figS4_final, width=11, height=6)
 
 ### (b) Fig S5: Fungal phyla all timepoints ====
 funphy_legendSI = get_legend(
@@ -384,5 +384,5 @@ figS5_final = grid.arrange(figS5, funphy_legendSI, nrow = 1,
                            widths = c(5,1))
 plot(figS5)
 
-#ggsave("./figures/figS5.svg", figS5_final, width=11, height=5)
+#ggsave("./figures/figS5.svg", figS5_final, width=11, height=6)
 

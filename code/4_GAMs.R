@@ -669,38 +669,38 @@ figS11a = plot_poly("bac_bccontrol_poly", "bac_bccontrol",
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS11b = plot_GAM("fun_bccontrol_gam", "fun_bccontrol", 
+figS11b = plot_poly("fun_bccontrol_poly", "fun_bccontrol", 
                   "Fungal similarity\n(to original community)", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = fun_bc_polytext, aes(label = label),
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11c = plot_GAM("bac_shannon_gam", "bac_shannon", "Prokaryotic Shannon", "", 
+figS11c = plot_poly("bac_shannon_poly", "bac_shannon", "Prokaryotic Shannon", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = bac_shan_polytext, aes(label = label),
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11d = plot_GAM("fun_shannon_gam", "fun_shannon", "Fungal Shannon", "", 
+figS11d = plot_poly("fun_shannon_poly", "fun_shannon", "Fungal Shannon", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = fun_shan_polytext, aes(label = label),
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS11e = plot_GAM("bac_richness_gam", "bac_richness", "Prokaryotic richness", "", 
+figS11e = plot_poly("bac_richness_poly", "bac_richness", "Prokaryotic richness", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = bac_rich_polytext, aes(label = label),
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11f = plot_GAM("fun_richness_gam", "fun_richness", "Fungal richness", "", 
+figS11f = plot_poly("fun_richness_poly", "fun_richness", "Fungal richness", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = fun_rich_polytext, aes(label = label),
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS11g = plot_GAM("mbc_gam", "mbc",
+figS11g = plot_poly("mbc_poly", "mbc",
                   expression(paste("Microbial C ", 
                                    "(\U00B5g C ", 
                                    g^-1, 
@@ -712,7 +712,7 @@ figS11g = plot_GAM("mbc_gam", "mbc",
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11h = plot_GAM("mbn_gam", "mbn",
+figS11h = plot_poly("mbn_poly", "mbn",
                   expression(paste("Microbial N ", 
                                    "(\U00B5g N ", 
                                    g^-1, 
@@ -724,7 +724,7 @@ figS11h = plot_GAM("mbn_gam", "mbn",
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11i = plot_GAM("doc_gam", "doc",
+figS11i = plot_poly("doc_poly", "doc",
                   expression(paste("DOC ", 
                                    "(\U00B5g C ", 
                                    g^-1, 
@@ -737,7 +737,7 @@ figS11i = plot_GAM("doc_gam", "doc",
             vjust = 1.5, hjust = 1.1, size = 4)
 
 
-figS11j = plot_GAM("don_gam", "don",
+figS11j = plot_poly("don_poly", "don",
                   expression(paste("DON ", 
                                    "(\U00B5g N ", 
                                    g^-1, 

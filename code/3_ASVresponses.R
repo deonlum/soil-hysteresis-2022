@@ -191,8 +191,8 @@ response_cols = c("insufficient data" = "white",
 # Trees were generated in FastTree from the top 500 most abundant prokaryotic and fungal ASVs
 # For fungi, family-level information was used to graft taxa on to a backbone tree,
 # and thus the tree only contains ASVs with available family-level taxonomy (N=236). 
-bac_tree = read.tree("Dataset_S4.txt")
-fun_tree = read.tree("Dataset_S5.txt")
+bac_tree = read.tree("./data/Dataset_S4.txt")
+fun_tree = read.tree("./data/Dataset_S5.txt")
 
 ## Adding features to tree ====
 bactree_df = as_tibble(bac_tree)
@@ -472,7 +472,6 @@ res_plot4 = ggplot(bac_combined_res[bac_combined_res$drydown %in% c("extreme SWD
   scale_fill_manual(name = "", values = response_cols)+
   legend_theme
 
-res_legendall = get_legend(res_plot)
 res_legend1 = get_legend(res_plot1)
 res_legend2 = get_legend(res_plot2)
 res_legend3 = get_legend(res_plot3)
@@ -684,7 +683,7 @@ figS7 = ggplot(data = bac_nulls_df[bac_nulls_df$variable %in% responses_to_plot,
         plot.title = element_text(size = 20, hjust = 0.5))
 
 figS7
-#ggsave("./figures/figS7.svg", figS7, height = 6, width = 10.5)
+#ggsave("./figures/figS7.svg", figS7, height = 6, width = 11)
 
 figS8 = ggplot(data = fun_nulls_df[fun_nulls_df$variable %in% responses_to_plot,])+
   geom_violin(aes(x = variable, y = value))+
@@ -704,4 +703,4 @@ figS8 = ggplot(data = fun_nulls_df[fun_nulls_df$variable %in% responses_to_plot,
         plot.title = element_text(size = 20, hjust = 0.5))
 
 figS8
-#ggsave("./figures/figS8.svg", figS8, height = 6, width = 10.5)
+#ggsave("./figures/figS8.svg", figS8, height = 6, width = 11)

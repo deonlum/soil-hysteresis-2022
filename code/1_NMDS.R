@@ -336,32 +336,35 @@ get_nmds_df = function(my_dist, my_rows){
   as.dist(as.matrix(my_dist)[my_rows, my_rows])
 }
 
+n_perm = 9999
+
 # For all five timepoints in gradient phase
+set.seed(11284)
 adonis2(get_nmds_df(bac_bcavg, 1:110)~swd*treatment*timepoint,
-        data = main_df[1:110,], by = "terms")
+        data = main_df[1:110,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(fun_bcavg, 1:110)~swd*treatment*timepoint,
-        data = main_df[1:110,], by = "terms")
+        data = main_df[1:110,], by = "terms", permutations = n_perm)
 
 # By timepoints, prokaryotes
 adonis2(get_nmds_df(bac_bcavg, 1:22)~swd*treatment,
-        data = main_df[1:22,], by = "terms")
+        data = main_df[1:22,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(bac_bcavg, 23:44)~swd*treatment,
-        data = main_df[23:44,], by = "terms")
+        data = main_df[23:44,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(bac_bcavg, 45:66)~swd*treatment,
-        data = main_df[45:66,], by = "terms")
+        data = main_df[45:66,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(bac_bcavg, 67:88)~swd*treatment,
-        data = main_df[67:88,], by = "terms")
+        data = main_df[67:88,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(bac_bcavg, 89:110)~swd*treatment,
-        data = main_df[89:110,], by = "terms")
+        data = main_df[89:110,], by = "terms", permutations = n_perm)
 
 # By timepoints, fungi
 adonis2(get_nmds_df(fun_bcavg, 1:22)~swd*treatment,
-        data = main_df[1:22,], by = "terms")
+        data = main_df[1:22,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(fun_bcavg, 23:44)~swd*treatment,
-        data = main_df[23:44,], by = "terms")
+        data = main_df[23:44,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(fun_bcavg, 45:66)~swd*treatment,
-        data = main_df[45:66,], by = "terms")
+        data = main_df[45:66,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(fun_bcavg, 67:88)~swd*treatment,
-        data = main_df[67:88,], by = "terms")
+        data = main_df[67:88,], by = "terms", permutations = n_perm)
 adonis2(get_nmds_df(fun_bcavg, 89:110)~swd*treatment,
-        data = main_df[89:110,], by = "terms")
+        data = main_df[89:110,], by = "terms", permutations = n_perm)

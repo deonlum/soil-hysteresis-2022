@@ -191,8 +191,8 @@ response_cols = c("insufficient data" = "white",
 # Trees were generated in FastTree from the top 500 most abundant prokaryotic and fungal ASVs
 # For fungi, family-level information was used to graft taxa on to a backbone tree,
 # and thus the tree only contains ASVs with available family-level taxonomy (N=236). 
-bac_tree = read.tree("./data/Dataset_S4.txt")
-fun_tree = read.tree("./data/Dataset_S5.txt")
+bac_tree = read.tree("./data/16s_tree.txt")
+fun_tree = read.tree("./data/ITS_tree.txt")
 
 ## Adding features to tree ====
 bactree_df = as_tibble(bac_tree)

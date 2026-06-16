@@ -605,16 +605,16 @@ run_null_model = function(my_null_pairwise, my_null_responses,
 
 ## To replicate results in main text:
 # set.seed(10325)
-# bac_drydown_null = run_null_model(obs_bacdist, bactree500, "drydown", n_reps = 10000)
-# bac_rewetup_null = run_null_model(obs_bacdist, bactree500, "rewetup", n_reps = 10000)
-# fun_drydown_null = run_null_model(obs_fundist, funtree500, "drydown", n_reps = 10000)
-# fun_rewetup_null = run_null_model(obs_fundist, funtree500, "rewetup", n_reps = 10000)
+# bac_drydown_null = run_null_model(obs_bacdist, bactree500, "drydown", n_reps = 9999)
+# bac_rewetup_null = run_null_model(obs_bacdist, bactree500, "rewetup", n_reps = 9999)
+# fun_drydown_null = run_null_model(obs_fundist, funtree500, "drydown", n_reps = 9999)
+# fun_rewetup_null = run_null_model(obs_fundist, funtree500, "rewetup", n_reps = 9999)
 
 # Quick run
-bac_drydown_null = run_null_model(obs_bacdist, bactree500, "drydown", n_reps = 1000)
-bac_rewetup_null = run_null_model(obs_bacdist, bactree500, "rewetup", n_reps = 1000)
-fun_drydown_null = run_null_model(obs_fundist, funtree500, "drydown", n_reps = 1000)
-fun_rewetup_null = run_null_model(obs_fundist, funtree500, "rewetup", n_reps = 1000)
+bac_drydown_null = run_null_model(obs_bacdist, bactree500, "drydown", n_reps = 999)
+bac_rewetup_null = run_null_model(obs_bacdist, bactree500, "rewetup", n_reps = 999)
+fun_drydown_null = run_null_model(obs_fundist, funtree500, "drydown", n_reps = 999)
+fun_rewetup_null = run_null_model(obs_fundist, funtree500, "rewetup", n_reps = 999)
 
 bac_drydown_null_df = melt(as.data.frame(bac_drydown_null))
 bac_rewetup_null_df = melt(as.data.frame(bac_rewetup_null))
@@ -629,21 +629,23 @@ fun_rewetup_null_df$trajectory = "rewetup"
 bac_nulls_df = rbind(bac_drydown_null_df, bac_rewetup_null_df)
 fun_nulls_df = rbind(fun_drydown_null_df, fun_rewetup_null_df)
 
-## Calculating percent of simulations where mean BL is less
+## Obtaining one-sided simulated p values, taken as fraction of simulations where
+## BL is more extreme than observed. +1 added to both numerator/denominator to account
+## for observed dataset
 bac_drydown_p = sapply(1:13, function(x){
-  sum(bac_drydown_null[,x]<bac_drydownBL$meandist[x])/nrow(bac_drydown_null)
+  (sum(bac_drydown_null[,x]<=bac_drydownBL$meandist[x])+1)/(nrow(bac_drydown_null)+1)
 })
 
 bac_rewetup_p = sapply(1:13, function(x){
-  sum(bac_rewetup_null[,x]<bac_rewetupBL$meandist[x])/nrow(bac_rewetup_null)
+  (sum(bac_rewetup_null[,x]<=bac_rewetupBL$meandist[x])+1)/(nrow(bac_rewetup_null)+1)
 })
 
 fun_drydown_p = sapply(1:13, function(x){
-  sum(fun_drydown_null[,x]<fun_drydownBL$meandist[x])/nrow(fun_drydown_null)
+  (sum(fun_drydown_null[,x]<=fun_drydownBL$meandist[x])+1)/(nrow(fun_drydown_null)+1)
 })
 
 fun_rewetup_p = sapply(1:13, function(x){
-  sum(fun_rewetup_null[,x]<fun_rewetupBL$meandist[x])/nrow(fun_rewetup_null)
+  (sum(fun_rewetup_null[,x]<=fun_rewetupBL$meandist[x])+1)/(nrow(fun_rewetup_null)+1)
 })
 
 bac_drydownBL$trajectory = "drydown"

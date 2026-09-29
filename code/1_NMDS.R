@@ -2,22 +2,6 @@
 
 source("./code/initial_setup.R")
 
-## Repeated rarefaction for diversity indices
-## To replicate same data in paper exactly (slow)
-# set.seed(4123)
-# bac_avgdiv = repeat_rarefy_div(clean_bac, 1000)
-# 
-# set.seed(2490)
-# fun_avgdiv = repeat_rarefy_div(clean_fun, 1000)
-
-# Quick run (similar results)
-bac_avgdiv = repeat_rarefy_div(clean_bac, 10)
-fun_avgdiv = repeat_rarefy_div(clean_fun, 10)
-
-## Saving out values
-bac_bcavg = as.dist(bac_avgdiv$avg_matrix)
-fun_bcavg = as.dist(fun_avgdiv$avg_matrix)
-
 ## Prokaryotes ====
 set.seed(956)
 bac_nmds = metaMDS(bac_bcavg,
@@ -30,25 +14,25 @@ main_df$bac_nmds2 = bac_scores$NMDS2
 ## Generating isoclines for NMDS plots (similar to ordisurf)
 # Using only the final timepoint
 bac_nmds_gam = gam(swd ~ s(bac_nmds1, bac_nmds2,
-                           k = 5, bs = "tp"),
+                           k = 6, bs = "tp"),
                    method = "REML",
                    data = main_df[89:110,])
-bac_nmds_predict = data.frame(bac_nmds1 = seq(min(main_df$bac_nmds1)*1.1, 
-                                              max(main_df$bac_nmds1)*1.1, 
+bac_nmds_predict = data.frame(bac_nmds1 = seq(min(main_df$bac_nmds1)*1.2, 
+                                              max(main_df$bac_nmds1)*1.2, 
                                               length.out = 100),
-                              bac_nmds2 = seq(min(main_df$bac_nmds2)*1.1, 
-                                              max(main_df$bac_nmds2)*1.1,
+                              bac_nmds2 = seq(min(main_df$bac_nmds2)*1.2, 
+                                              max(main_df$bac_nmds2)*1.2,
                                               length.out = 100))
 bac_nmds_predict = expand.grid(bac_nmds_predict)
 bac_predicted_swd = predict.gam(bac_nmds_gam, newdata = bac_nmds_predict)
 bac_nmds_gam_df = cbind(bac_nmds_predict, bac_predicted_swd)
 
 ## Plotting
-fig1b = ggplot() +
+fig2a = ggplot() +
   geom_contour(data = bac_nmds_gam_df, 
                aes(x = bac_nmds1, y = bac_nmds2, 
                    z = bac_predicted_swd),
-               breaks = seq(0.3,0.9,0.05),
+               breaks = seq(0.3,0.7,0.05),
                col = "grey", alpha = 0.5)+
   # Control points
   geom_point(data = main_df[main_df$treatment == "control",],
@@ -77,15 +61,19 @@ fig1b = ggplot() +
   geom_text_contour(data = bac_nmds_gam_df, 
                     aes(x = bac_nmds1, y = bac_nmds2, 
                         z = bac_predicted_swd),
-                    breaks = seq(0.3,0.9,0.05),
+                    breaks = seq(0.3,0.6,0.05),
                     skip = 1, 
-                    label.placer = label_placer_flattest())+
-  labs(x = "NMDS1", y = "NMDS2", title = "Prokaryotes")+
+                    label.placer = label_placer_fraction(0.1))+
+  labs(x = "NMDS1", y = "NMDS2")+
+  annotate("text", label = "Prokaryotes", x = Inf, y = Inf,
+           hjust = 1.1, vjust = 1.4, size = 6, fontface = "bold")+
   theme(panel.grid = element_blank(),
-        plot.title = element_text(size = 22))+
+        plot.title = element_text(size = 22),
+        axis.text = element_blank(),
+        legend.title = element_text(hjust = 0.5))+
   coord_fixed()
 
-fig1b
+fig2a
 
 ## Fungi ====
 set.seed(8213)
@@ -112,12 +100,29 @@ fun_predicted_swd = predict.gam(fun_nmds_gam, newdata = fun_nmds_predict)
 fun_nmds_gam_df = cbind(fun_nmds_predict, fun_predicted_swd)
 
 ## Plotting
-fig1c = ggplot() + 
+fig2b = ggplot() + 
+  
+  # Contour lines
   geom_contour(data = fun_nmds_gam_df, 
                aes(x = fun_nmds1, y = fun_nmds2, 
                    z = fun_predicted_swd),
                breaks = seq(0.3,0.9,0.05),
                col = "grey", alpha = 0.5)+
+  
+  # Identified thresholds
+  # geom_contour(data = fun_nmds_gam_df, 
+  #              aes(x = fun_nmds1, y = fun_nmds2, 
+  #                  z = fun_predicted_swd),
+  #              breaks = c(0.449),
+  #              linetype = "dashed", linewidth = 1.25,
+  #              colour = mycols["field"], alpha = 0.7)+
+  # geom_contour(data = fun_nmds_gam_df, 
+  #              aes(x = fun_nmds1, y = fun_nmds2, 
+  #                  z = fun_predicted_swd),
+  #              breaks = c(0.550), 
+  #              linetype = "dashed", linewidth = 1.25,
+  #              colour = mycols["drought"], alpha = 0.7)+
+  
   # Dry-down points
   geom_point(data = main_df[main_df$treatment == "field",], 
              aes(x = fun_nmds1, y = fun_nmds2, col = swd), size = 4)+
@@ -134,7 +139,7 @@ fig1c = ggplot() +
                         z = fun_predicted_swd),
                     breaks = seq(0.3,0.9,0.05),
                     skip = 1, 
-                    label.placer = label_placer_fraction(frac = 1))+
+                    label.placer = label_placer_fraction(frac = 0))+
   # Control points
   geom_point(data = main_df[main_df$treatment == "control",],
              aes(x = fun_nmds1, y = fun_nmds2), 
@@ -148,22 +153,17 @@ fig1c = ggplot() +
              aes(x = fun_nmds1, y = fun_nmds2), 
              shape = 17, col = "black",
              size = 4, alpha = 0.5)+
-  labs(x = "NMDS1", y = "NMDS2", title = "Fungi")+
+  annotate("text", label = "Fungi", x = Inf, y = Inf,
+           hjust = 1.1, vjust = 1.3, size = 6, fontface = "bold")+
+  labs(x = "NMDS1", y = "NMDS2")+
   theme(panel.grid = element_blank(),
-        plot.title = element_text(size = 22))+
+        plot.title = element_text(size = 22),
+        axis.text = element_blank(),
+        legend.title = element_text(hjust = 0.5))+
   coord_fixed()
 
-fig1c
-nmds_legend = get_legend(fig1b)
-fig1 = arrangeGrob(fig1b + theme(legend.position = "none"),
-                   nmds_legend,
-                   fig1c + theme(legend.position = "none"),
-                   layout_matrix = rbind(c(1,2,3)),
-                   widths = c(4,1.2,4),
-                   heights = c(4))
-plot(fig1)
-
-#ggsave("./figures/fig1.svg", fig1, width=14, height=8)
+#ggsave("./figures/fig2a.svg", fig2a, width=6, height=5)
+#ggsave("./figures/fig2b.svg", fig2b, width=6, height=5)
 
 # Additional SI plots (S1-3) ====
 
@@ -227,12 +227,12 @@ figS1b = ggplot()+
   facet_wrap(.~timepoint, ncol = 1)
 
 figS1 = grid.arrange(figS1a + theme(legend.position = "none"),
-                     nmds_legend,
+                     get_legend(figS1a),
                      figS1b + theme(legend.position = "none"),
                      layout_matrix = rbind(c(1,2,3)),
-                     widths = c(10,0.8,10),
-                     heights = 12)
-#ggsave("./figures/figS1.svg", figS1, width=10, height=10)
+                     widths = c(10,0.4,10),
+                     heights = 10)
+#ggsave("./figures/figS1.svg", figS1, width=9, height=9)
 
 ## (b) Figure S2/S3: Alternative plots showing response over time with binned SWD levels ====
 main_df$swd_level = factor(paste("SWD level", c(rep(c(1:11, 11:1),5), rep(c(11,1,11), each = 3))),
@@ -245,11 +245,15 @@ main_df$timepoint_integer = ifelse(main_df$timepoint == "3 days", 1,
                                                         ifelse(main_df$timepoint == "70 days", 5, 0)))))
 
 # These plots are imprecise as the SWD levels do not correspond exactly to SWD:
-ggplot(main_df[main_df$timepoint_integer != 0,])+
-  geom_text(aes(x = timepoint, y = swd, label = swd_level, colour = treatment))
 # However, the SWD levels are similar enough across timepoints to  
 # provide some useful information about how communities are responding
 # within each level
+ggplot(main_df[main_df$timepoint_integer != 0,])+
+  geom_point(aes(x = as.numeric(timepoint), y = swd, 
+                 colour = swd_level, shape = treatment,
+                group = interaction(swd_level, treatment)), size = 3)+
+  geom_line(aes(x = as.numeric(timepoint), y = swd, colour = swd_level,
+                group = interaction(swd_level, treatment)))
 
 ## For legend
 figS2_legend = get_legend(ggplot(data = main_df[main_df$treatment %in% c("field", "drought"),], 
@@ -265,7 +269,8 @@ figS2_legend = get_legend(ggplot(data = main_df[main_df$treatment %in% c("field"
 
 figS2 = ggplot()+
   # Initial points
-  geom_point(data = main_df[!main_df$treatment %in% c("field", "drought"),-24],
+  geom_point(data = main_df[!main_df$treatment %in% c("field", "drought"),
+                            -which(names(main_df) == "swd_level")],
              aes(x = bac_nmds1, y = bac_nmds2,
                  shape = treatment), colour = "grey")+
   # Dry-down points
@@ -295,7 +300,8 @@ figS2 = ggplot()+
 
 figS3 = ggplot()+
   # Initial points
-  geom_point(data = main_df[!main_df$treatment %in% c("field", "drought"),-24],
+  geom_point(data = main_df[!main_df$treatment %in% c("field", "drought"),
+                            -which(names(main_df) == "swd_level")],
              aes(x = fun_nmds1, y = fun_nmds2,
                  shape = treatment), colour = "grey")+
   # Dry-down points

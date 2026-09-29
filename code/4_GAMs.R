@@ -1,39 +1,15 @@
 # 4. GAMs for all other measures ====
+# gam.check and other diagnostics have been run previously to check for k and distrbutions
 
 source("./code/initial_setup.R")
 
 library(marginaleffects)
 
-## To replicate same data in paper exactly (slow)
-## Note: output is the same as in 1_NMDS.R
-# set.seed(4123)
-# bac_avgdiv = repeat_rarefy_div(clean_bac, 1000)
-# 
-# set.seed(2490)
-# fun_avgdiv = repeat_rarefy_div(clean_fun, 1000)
-
-# Quick run (very similar results)
-bac_avgdiv = repeat_rarefy_div(clean_bac, 10)
-fun_avgdiv = repeat_rarefy_div(clean_fun, 10)
-
-## Saving out values
-main_df$bac_richness = bac_avgdiv$avg_richness
-main_df$bac_shannon = bac_avgdiv$avg_shannon
-bac_bcavg = as.dist(bac_avgdiv$avg_matrix)
-
-main_df$fun_richness = fun_avgdiv$avg_richness
-main_df$fun_shannon = fun_avgdiv$avg_shannon
-fun_bcavg = as.dist(fun_avgdiv$avg_matrix)
-
-## Getting mean dissimilarity to original community (taking 1-BC to get "similarity")
-main_df$bac_bccontrol = 1 - apply(as.matrix(bac_bcavg)[,111:113], 1, mean)
-main_df$fun_bccontrol = 1 - apply(as.matrix(fun_bcavg)[,111:113], 1, mean)
-
 ## Creating dataframe to store predicted values
 temp_df = droplevels(main_df[1:110,])
-predicted_data = data.frame(treatment = rep(rep(levels(temp_df$treatment), each = 100),5),
-                            swd = rep(seq(min(temp_df$swd), max(temp_df$swd), length.out = 100), 2*5),
-                            timepoint = rep(levels(temp_df$timepoint), each = 2*100),
+predicted_data = data.frame(treatment = rep(rep(levels(temp_df$treatment), each = 1000),5),
+                            swd = rep(seq(min(temp_df$swd), max(temp_df$swd), length.out = 1000), 2*5),
+                            timepoint = rep(levels(temp_df$timepoint), each = 2*1000),
                             stringsAsFactors = TRUE)
 
 ## (a) Prokaryotes Shannon ====
@@ -41,7 +17,7 @@ bac_shannon_gam = gam(bac_shannon ~ s(swd, k = 5) +
                         s(swd, treatment, bs = "sz") +
                         s(swd, timepoint, bs = "sz") +
                         s(swd, timepoint, treatment, bs = "sz"),
-                      method = "ML",
+                      method = "REML",
                       select = TRUE,
                       data = main_df[1:110,])
 
@@ -57,7 +33,7 @@ fun_shannon_gam = gam(fun_shannon ~ s(swd, k = 5) +
                         s(swd, treatment, bs = "sz") +
                         s(swd, timepoint, bs = "sz") +
                         s(swd, timepoint, treatment, bs = "sz"),
-                      method = "ML",
+                      method = "REML",
                       select = TRUE,
                       data = main_df[1:110,])
 
@@ -72,7 +48,7 @@ mbc_gam = gam(mbc ~ s(swd, k = 5) +
                 s(swd, treatment, bs = "sz") +
                 s(swd, timepoint, bs = "sz") +
                 s(swd, timepoint, treatment, bs = "sz"),
-              method = "ML",
+              method = "REML",
               select = TRUE,
               data = main_df[1:110,])
 
@@ -88,7 +64,7 @@ mbn_gam = gam(mbn ~ s(swd, k = 4) +
                 s(swd, treatment, bs = "sz") +
                 s(swd, timepoint, bs = "sz") +
                 s(swd, treatment, timepoint, bs = "sz"),
-              method = "ML",
+              method = "REML",
               select = TRUE,
               data = main_df[1:110,])
 
@@ -102,7 +78,7 @@ doc_gam = gam(doc ~ s(swd, k = 6) +
                 s(swd, treatment, bs = "sz") +
                 s(swd, timepoint, bs = "sz") +
                 s(swd, treatment, timepoint, bs = "sz"),
-              method = "ML",
+              method = "REML",
               select = TRUE,
               data = main_df[1:110,])
 
@@ -117,7 +93,7 @@ don_gam = gam(don ~ s(swd, k = 6) +
                 s(swd, timepoint, bs = "sz") +
                 s(swd, treatment, timepoint, bs = "sz"),
               family = tw,
-              method = "ML",
+              method = "REML",
               select = TRUE,
               data = main_df[1:110,])
 
@@ -140,7 +116,7 @@ bac_richness_gam = gam(bac_richness ~ s(swd, k = 5) +
                          s(swd, treatment, bs = "sz") +
                          s(swd, timepoint, bs = "sz") +
                          s(swd, timepoint, treatment, bs = "sz"),
-                       method = "ML",
+                       method = "REML",
                        select = TRUE,
                        data = main_df[1:110,])
 
@@ -155,7 +131,7 @@ fun_richness_gam = gam(fun_richness ~ s(swd, k = 5) +
                          s(swd, treatment, bs = "sz") +
                          s(swd, timepoint, bs = "sz") +
                          s(swd, timepoint, treatment, bs = "sz"),
-                       method = "ML",
+                       method = "REML",
                        select = TRUE,
                        data = main_df[1:110,])
 
@@ -166,12 +142,12 @@ predicted_data$fun_richness_gam = get_gam_ci(fun_richness_gam, predicted_data)
 predicted_data$fun_richness_poly = as.data.frame(predict(fun_richness_poly, predicted_data, 
                                                          interval = "confidence"))
 
-## (i) BC to controls prokaryotes (SI + fig. 1e) ====
+## (i) BC to controls prokaryotes (SI) ====
 bac_bccontrol_gam = gam(bac_bccontrol ~ s(swd, k = 6) +
                           s(swd, treatment, bs = "sz") +
                           s(swd, timepoint, bs = "sz") +
                           s(swd, timepoint, treatment, bs = "sz"),
-                        method = "ML",
+                        method = "REML",
                         select = TRUE,
                         data = main_df[1:110,])
 
@@ -182,7 +158,7 @@ predicted_data$bac_bccontrol_gam = get_gam_ci(bac_bccontrol_gam, predicted_data)
 predicted_data$bac_bccontrol_poly = as.data.frame(predict(bac_bccontrol_poly, predicted_data, 
                                                           interval = "confidence"))
 
-## (j) BC to controls fungi (SI + fig. 1f) ====
+## (j) BC to controls fungi (SI) ====
 fun_bccontrol_gam = gam(fun_bccontrol ~ s(swd, k = 5) +
                           s(swd, treatment, bs = "sz") +
                           s(swd, timepoint, bs = "sz") +
@@ -196,6 +172,38 @@ fun_bccontrol_poly = lm(fun_bccontrol~poly(swd,2)*treatment*timepoint,
                         data = main_df[1:110,])
 predicted_data$fun_bccontrol_gam = get_gam_ci(fun_bccontrol_gam, predicted_data)
 predicted_data$fun_bccontrol_poly = as.data.frame(predict(fun_bccontrol_poly, predicted_data, 
+                                                          interval = "confidence"))
+
+## (k) BC to initial prokaryotes (SI) ====
+bac_bcinitial_gam = gam(bac_bcinitial ~ s(swd, k = 6) +
+                          s(swd, treatment, bs = "sz") +
+                          s(swd, timepoint, bs = "sz") +
+                          s(swd, timepoint, treatment, bs = "sz"),
+                        method = "REML",
+                        select = TRUE,
+                        data = main_df[1:110,])
+
+# Polynomial model
+bac_bcinitial_poly = lm(bac_bcinitial~poly(swd,2)*treatment*timepoint, 
+                        data = main_df[1:110,])
+predicted_data$bac_bcinitial_gam = get_gam_ci(bac_bcinitial_gam, predicted_data)
+predicted_data$bac_bcinitial_poly = as.data.frame(predict(bac_bcinitial_poly, predicted_data, 
+                                                          interval = "confidence"))
+
+## (l) BC to initial fungi (SI) ====
+fun_bcinitial_gam = gam(fun_bcinitial ~ s(swd, k = 5) +
+                          s(swd, treatment, bs = "sz") +
+                          s(swd, timepoint, bs = "sz") +
+                          s(swd, timepoint, treatment, bs = "sz"),
+                        method = "REML",
+                        select = TRUE,
+                        data = main_df[1:110,])
+
+# Polynomial model
+fun_bcinitial_poly = lm(fun_bcinitial~poly(swd,2)*treatment*timepoint, 
+                        data = main_df[1:110,])
+predicted_data$fun_bcinitial_gam = get_gam_ci(fun_bcinitial_gam, predicted_data)
+predicted_data$fun_bcinitial_poly = as.data.frame(predict(fun_bcinitial_poly, predicted_data, 
                                                           interval = "confidence"))
 
 # Fig. 4: GAM plots (T1 and T5) ====
@@ -359,6 +367,12 @@ bac_bc_text = data.frame(label = paste0("D[exp] == '",
 fun_bc_text = data.frame(label = paste0("D[exp] == '", 
                                         round(summary(fun_bccontrol_gam)$dev.expl*100, 1), "%'"),
                          timepoint = factor("70 days"))
+bac_bcinit_text = data.frame(label = paste0("D[exp] == '", 
+                                        round(summary(bac_bcinitial_gam)$dev.expl*100, 1), "%'"),
+                         timepoint = factor("70 days"))
+fun_bcinit_text = data.frame(label = paste0("D[exp] == '", 
+                                        round(summary(fun_bcinitial_gam)$dev.expl*100, 1), "%'"),
+                         timepoint = factor("70 days"))
 bac_shan_text = data.frame(label = paste0("D[exp] == '", 
                                           round(summary(bac_shannon_gam)$dev.expl*100, 1), "%'"),
                            timepoint = factor("70 days"))
@@ -398,31 +412,45 @@ figS9b = plot_GAM("fun_bccontrol_gam", "fun_bccontrol",
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS9c = plot_GAM("bac_shannon_gam", "bac_shannon", "Prokaryotic Shannon", "", 
+figS9c = plot_GAM("bac_bcinitial_gam", "bac_bcinitial", 
+                  "Prokaryotic similarity\n(to initial state)", "", 
+                  levels(main_df$timepoint)[c(1:5)])+
+  geom_text(data = bac_bcinit_text, aes(label = label),
+            x = Inf, y = -Inf, parse = TRUE,
+            vjust = -0.5, hjust = 1.1, size = 4)
+
+figS9d = plot_GAM("fun_bcinitial_gam", "fun_bcinitial", 
+                  "Fungal similarity\n(to initial state)", "", 
+                  levels(main_df$timepoint)[c(1:5)])+
+  geom_text(data = fun_bcinit_text, aes(label = label),
+            x = Inf, y = -Inf, parse = TRUE,
+            vjust = -0.5, hjust = 1.1, size = 4)
+
+figS9e = plot_GAM("bac_shannon_gam", "bac_shannon", "Prokaryotic Shannon", "", 
                  levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = bac_shan_text, aes(label = label),
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS9d = plot_GAM("fun_shannon_gam", "fun_shannon", "Fungal Shannon", "", 
+figS9f = plot_GAM("fun_shannon_gam", "fun_shannon", "Fungal Shannon", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = fun_shan_text, aes(label = label),
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS9e = plot_GAM("bac_richness_gam", "bac_richness", "Prokaryotic richness", "", 
+figS9g = plot_GAM("bac_richness_gam", "bac_richness", "Prokaryotic richness", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = bac_rich_text, aes(label = label),
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS9f = plot_GAM("fun_richness_gam", "fun_richness", "Fungal richness", "", 
+figS9h = plot_GAM("fun_richness_gam", "fun_richness", "Fungal richness", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = fun_rich_text, aes(label = label),
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS9g = plot_GAM("mbc_gam", "mbc",
+figS9i = plot_GAM("mbc_gam", "mbc",
                   expression(paste("Microbial C ", 
                                    "(\U00B5g C ", 
                                    g^-1, 
@@ -434,7 +462,7 @@ figS9g = plot_GAM("mbc_gam", "mbc",
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS9h = plot_GAM("mbn_gam", "mbn",
+figS9j = plot_GAM("mbn_gam", "mbn",
                  expression(paste("Microbial N ", 
                                   "(\U00B5g N ", 
                                   g^-1, 
@@ -446,7 +474,7 @@ figS9h = plot_GAM("mbn_gam", "mbn",
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS9i = plot_GAM("doc_gam", "doc",
+figS9k = plot_GAM("doc_gam", "doc",
                  expression(paste("DOC ", 
                                   "(\U00B5g C ", 
                                   g^-1, 
@@ -459,7 +487,7 @@ figS9i = plot_GAM("doc_gam", "doc",
             vjust = 1.5, hjust = 1.1, size = 4)
 
 
-figS9j = plot_GAM("don_gam", "don",
+figS9l = plot_GAM("don_gam", "don",
                  expression(paste("DON ", 
                                   "(\U00B5g N ", 
                                   g^-1, 
@@ -478,15 +506,17 @@ figS9 = grid.arrange(gam_legend,
                      figS9e, figS9f,
                      figS9g, figS9h,
                      figS9i, figS9j,
+                     figS9k, figS9l,
                      layout_matrix = rbind(c(1,NA,1),
                                            c(2,NA,3),
                                            c(4,NA,5),
                                            c(6,NA,7),
                                            c(8,NA,9),
-                                           c(10,NA,11)),
-                     heights = c(0.3,1,1,1,1,1),
+                                           c(10,NA,11),
+                                           c(12,NA,13)),
+                     heights = c(0.3,1,1,1,1,1,1),
                      widths = c(1, 0.05, 1))
-#ggsave("figures/figS9.svg", figS9, width=20, height=15)
+#ggsave("figures/figS9.svg", figS9, width=20, height=18)
 
 ## (b) Fig. S10: GAM slopes ====
 
@@ -500,6 +530,8 @@ get_slopes = function(x){
 
 bac_bc_slopes = get_slopes("bac_bccontrol_gam")
 fun_bc_slopes = get_slopes("fun_bccontrol_gam")
+bac_bcinit_slopes = get_slopes("bac_bcinitial_gam")
+fun_bcinit_slopes = get_slopes("fun_bcinitial_gam")
 bac_shan_slopes = get_slopes("bac_shannon_gam")
 fun_shan_slopes = get_slopes("fun_shannon_gam")
 bac_rich_slopes = get_slopes("bac_richness_gam")
@@ -534,8 +566,10 @@ plotting_slopes = function(x, my_ylab){
   return(curr_plot)
 }
 
-bac_bc_slopeplot = plotting_slopes(bac_bc_slopes, "Prokaryotic similarity")
-fun_bc_slopeplot = plotting_slopes(fun_bc_slopes, "Fungal similarity")
+bac_bc_slopeplot = plotting_slopes(bac_bc_slopes, "Prokaryotic similarity\n(to original community)")
+fun_bc_slopeplot = plotting_slopes(fun_bc_slopes, "Fungal similarity\n(to original community)")
+bac_bcinit_slopeplot = plotting_slopes(bac_bcinit_slopes, "Prokaryotic similarity\n(to initial state)")
+fun_bcinit_slopeplot = plotting_slopes(fun_bcinit_slopes, "Fungal similarity\n(to initial state)")
 bac_shan_slopeplot = plotting_slopes(bac_shan_slopes, "Prokaryotic Shannon")
 fun_shan_slopeplot = plotting_slopes(fun_shan_slopes, "Fungal Shannon")
 bac_rich_slopeplot = plotting_slopes(bac_rich_slopes, "Prokaryotic richness")
@@ -546,26 +580,29 @@ doc_slopeplot = plotting_slopes(doc_slopes, "DOC")
 don_slopeplot = plotting_slopes(don_slopes, "DON")
 
 figS10 = grid.arrange(gam_legend, 
-                           bac_bc_slopeplot,
-                           fun_bc_slopeplot, 
-                           bac_shan_slopeplot,
-                           fun_shan_slopeplot, 
-                           bac_rich_slopeplot,
-                           fun_rich_slopeplot,
-                           mbc_slopeplot, 
-                           mbn_slopeplot,
-                           doc_slopeplot, 
-                           don_slopeplot,
-                           layout_matrix = rbind(c(1,NA,1),
-                                                 c(2,NA,3),
-                                                 c(4,NA,5),
-                                                 c(6,NA,7),
-                                                 c(8,NA,9),
-                                                 c(10,NA,11)),
-                           heights = c(0.3,1,1,1,1,1),
-                           widths = c(1, 0.05, 1))
+                      bac_bc_slopeplot,
+                      fun_bc_slopeplot, 
+                      bac_bcinit_slopeplot,
+                      fun_bcinit_slopeplot, 
+                      bac_shan_slopeplot,
+                      fun_shan_slopeplot, 
+                      bac_rich_slopeplot,
+                      fun_rich_slopeplot,
+                      mbc_slopeplot, 
+                      mbn_slopeplot,
+                      doc_slopeplot, 
+                      don_slopeplot,
+                      layout_matrix = rbind(c(1,NA,1),
+                                            c(2,NA,3),
+                                            c(4,NA,5),
+                                            c(6,NA,7),
+                                            c(8,NA,9),
+                                            c(10,NA,11),
+                                            c(12,NA,13)),
+                      heights = c(0.3,1,1,1,1,1,1),
+                      widths = c(1, 0.05, 1))
 
-#ggsave("./figures/figS10.svg", figS10, width=20, height=15)
+#ggsave("./figures/figS10.svg", figS10, width=20, height=18)
 
 ## (c) Fig. S11: Polynomial plots ====
 
@@ -573,22 +610,31 @@ figS10 = grid.arrange(gam_legend,
 bac_bc_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
                                             round(summary(bac_bccontrol_poly)$r.sq,3)),
                              timepoint = factor("70 days"))
-bac_shan_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
-                                              round(summary(bac_shannon_poly)$r.sq,3)),
-                               timepoint = factor("70 days"))
-bac_rich_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
-                                              round(summary(bac_richness_poly)$r.sq,3)),
-                               timepoint = factor("70 days"))
-
 fun_bc_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
                                             round(summary(fun_bccontrol_poly)$r.sq,3)),
                              timepoint = factor("70 days"))
+
+bac_bcinit_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
+                                            round(summary(bac_bcinitial_poly)$r.sq,3)),
+                             timepoint = factor("70 days"))
+fun_bcinit_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
+                                            round(summary(fun_bcinitial_poly)$r.sq,3)),
+                             timepoint = factor("70 days"))
+
+bac_shan_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
+                                              round(summary(bac_shannon_poly)$r.sq,3)),
+                               timepoint = factor("70 days"))
 fun_shan_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
                                               round(summary(fun_shannon_poly)$r.sq,3)),
+                               timepoint = factor("70 days"))
+
+bac_rich_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
+                                              round(summary(bac_richness_poly)$r.sq,3)),
                                timepoint = factor("70 days"))
 fun_rich_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
                                               round(summary(fun_richness_poly)$r.sq,3)),
                                timepoint = factor("70 days"))
+
 mbc_polytext = data.frame(label = paste0('R["adj"]^2 ==', 
                                          round(summary(mbc_poly)$r.sq,3)),
                           timepoint = factor("70 days"))
@@ -676,31 +722,45 @@ figS11b = plot_poly("fun_bccontrol_poly", "fun_bccontrol",
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11c = plot_poly("bac_shannon_poly", "bac_shannon", "Prokaryotic Shannon", "", 
+figS11c = plot_poly("bac_bcinitial_poly", "bac_bcinitial", 
+                    "Prokaryotic similarity\n(to initial state)", "", 
+                    levels(main_df$timepoint)[c(1:5)])+
+  geom_text(data = bac_bcinit_polytext, aes(label = label),
+            x = Inf, y = -Inf, parse = TRUE,
+            vjust = -0.5, hjust = 1.1, size = 4)
+
+figS11d = plot_poly("fun_bcinitial_poly", "fun_bcinitial", 
+                    "Fungal similarity\n(to initial state)", "", 
+                    levels(main_df$timepoint)[c(1:5)])+
+  geom_text(data = fun_bcinit_polytext, aes(label = label),
+            x = Inf, y = Inf, parse = TRUE,
+            vjust = 1.5, hjust = 1.1, size = 4)
+
+figS11e = plot_poly("bac_shannon_poly", "bac_shannon", "Prokaryotic Shannon", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = bac_shan_polytext, aes(label = label),
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11d = plot_poly("fun_shannon_poly", "fun_shannon", "Fungal Shannon", "", 
+figS11f = plot_poly("fun_shannon_poly", "fun_shannon", "Fungal Shannon", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = fun_shan_polytext, aes(label = label),
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS11e = plot_poly("bac_richness_poly", "bac_richness", "Prokaryotic richness", "", 
+figS11g = plot_poly("bac_richness_poly", "bac_richness", "Prokaryotic richness", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = bac_rich_polytext, aes(label = label),
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11f = plot_poly("fun_richness_poly", "fun_richness", "Fungal richness", "", 
+figS11h = plot_poly("fun_richness_poly", "fun_richness", "Fungal richness", "", 
                   levels(main_df$timepoint)[c(1:5)])+
   geom_text(data = fun_rich_polytext, aes(label = label),
             x = Inf, y = -Inf, parse = TRUE,
             vjust = -0.5, hjust = 1.1, size = 4)
 
-figS11g = plot_poly("mbc_poly", "mbc",
+figS11i = plot_poly("mbc_poly", "mbc",
                   expression(paste("Microbial C ", 
                                    "(\U00B5g C ", 
                                    g^-1, 
@@ -712,7 +772,7 @@ figS11g = plot_poly("mbc_poly", "mbc",
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11h = plot_poly("mbn_poly", "mbn",
+figS11j = plot_poly("mbn_poly", "mbn",
                   expression(paste("Microbial N ", 
                                    "(\U00B5g N ", 
                                    g^-1, 
@@ -724,7 +784,7 @@ figS11h = plot_poly("mbn_poly", "mbn",
             x = Inf, y = Inf, parse = TRUE,
             vjust = 1.5, hjust = 1.1, size = 4)
 
-figS11i = plot_poly("doc_poly", "doc",
+figS11k = plot_poly("doc_poly", "doc",
                   expression(paste("DOC ", 
                                    "(\U00B5g C ", 
                                    g^-1, 
@@ -737,7 +797,7 @@ figS11i = plot_poly("doc_poly", "doc",
             vjust = 1.5, hjust = 1.1, size = 4)
 
 
-figS11j = plot_poly("don_poly", "don",
+figS11l = plot_poly("don_poly", "don",
                   expression(paste("DON ", 
                                    "(\U00B5g N ", 
                                    g^-1, 
@@ -756,14 +816,91 @@ figS11 = grid.arrange(gam_legend,
                       figS11e, figS11f,
                       figS11g, figS11h,
                       figS11i, figS11j,
+                      figS11k, figS11l,
                       layout_matrix = rbind(c(1,NA,1),
                                             c(2,NA,3),
                                             c(4,NA,5),
                                             c(6,NA,7),
                                             c(8,NA,9),
-                                            c(10,NA,11)),
-                      heights = c(0.3,1,1,1,1,1),
+                                            c(10,NA,11),
+                                            c(12,NA,13)),
+                      heights = c(0.3,1,1,1,1,1,1),
                       widths = c(1, 0.05, 1))
 
-#ggsave("./figures/figS11.svg", figS11, width=20, height=15)
+#ggsave("./figures/figS11.svg", figS11, width=20, height=18)
 
+## Calculating degree of hysteresis
+# We'll take the absolute difference between the 1000 values we have
+get_hysteresis = function(x){
+  curr_list = which(names(predicted_data) == x)
+  
+  my_df = data.frame()
+  df_row = 0
+  for (tt in unique(predicted_data$timepoint)){
+    df_row = df_row + 1
+    abs_diff = abs(predicted_data[[curr_list]]$fit[predicted_data$treatment == "field" &
+                                                         predicted_data$timepoint == tt]-
+                         predicted_data[[curr_list]]$fit[predicted_data$treatment == "drought" &
+                                                           predicted_data$timepoint == tt])
+
+    swd_grid = seq(min(predicted_data$swd), max(predicted_data$swd),
+                   length.out = nrow(predicted_data)/10) # hardcoding length
+    
+    # Numerically integrating difference (trapezoidal)
+    diff_val = sum(diff(swd_grid)*(abs_diff[-length(abs_diff)]+abs_diff[-1])/2)
+    
+    to_bind = data.frame(tt, diff_val, measure = sub("_gam", "", x))
+    my_df = rbind(my_df, to_bind)
+  }
+  my_df
+}
+
+hys_vals = rbind(get_hysteresis("mbc_gam"),
+                 get_hysteresis("mbn_gam"),
+                 get_hysteresis("doc_gam"),
+                 get_hysteresis("don_gam"),
+                 get_hysteresis("bac_richness_gam"),
+                 get_hysteresis("fun_richness_gam"),
+                 get_hysteresis("bac_shannon_gam"),
+                 get_hysteresis("fun_shannon_gam"),
+                 get_hysteresis("bac_bccontrol_gam"),
+                 get_hysteresis("fun_bccontrol_gam"))
+
+hys_vals$tt = as.factor(hys_vals$tt)
+hys_vals$tt = factor(hys_vals$tt, levels = c("3 days", "7 days", "14 days",
+                                             "35 days", "70 days"))
+
+hys_vals$measure = as.factor(hys_vals$measure)
+hys_vals$measure = factor(hys_vals$measure, levels = c("bac_bccontrol", "fun_bccontrol",
+                                                       "bac_shannon", "fun_shannon", 
+                                                       "bac_richness", "fun_richness",
+                                                       "mbc", "mbn",
+                                                       "doc", "don"))
+
+# Scaling extractant values 
+hys_vals$diff_val[hys_vals$measure %in% c("doc", "don", "mbc", "mbn")] =
+  hys_vals$diff_val[hys_vals$measure %in% c("doc", "don", "mbc", "mbn")]*1000
+
+hys_vals$labels = hys_vals$measure
+levels(hys_vals$labels)
+levels(hys_vals$labels) = c("Prokaryotic similarity\n(to original community)",
+                            "Fungal similarity\n(to original community)",
+                            "Prokaryotic Shannon",
+                            "Fungal Shannon",
+                            "Prokaryotic richness",
+                            "Fungal richness",
+                            "Microbial C",
+                            "Microbial N",
+                            "DOC",
+                            "DON")
+
+
+figS12 = ggplot(hys_vals, aes(x = as.numeric(tt), y = diff_val))+
+  geom_line(linewidth = 1, alpha = 0.3)+
+  geom_point(size = 2)+
+  facet_wrap(.~labels, scales = "free", nrow = 5)+
+  lims(y = c(0,NA))+
+  labs(x = "days", y = "hysteresis magnitude")+
+  scale_x_continuous(labels = sub(" days", "", levels(hys_vals$tt)))
+
+#ggsave("./figures/figS12.svg", figS12, width=6, height=8)

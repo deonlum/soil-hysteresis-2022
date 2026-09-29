@@ -2,18 +2,6 @@
 
 source("./code/initial_setup.R")
 
-## Repeated rarefaction
-# To replicate results in paper
-# set.seed(1134)
-# bac_rare = repeat_rarefy(clean_bac, 1000)
-# set.seed(4520)
-# fun_rare = repeat_rarefy(clean_fun, 1000)
-
-## For a quick run (similar results)
-bac_rare = repeat_rarefy(clean_bac, 10)
-fun_rare = repeat_rarefy(clean_fun, 10)
-
-
 ## Prokaryotic phyla ====
 ## Grouping by phyla (warning is due to some NAs in taxonomy)
 bacphy_df = rowsum(t(bac_rare), clean_bac_taxonomy$Phylum)
@@ -55,7 +43,7 @@ bacphy_pred = data.frame(swd = rep(seq(min(bacphy_hi$swd),
 bacphy_pred2 = get_gam_ci(bacphy_mod, bacphy_pred)
 
 # Breaking apart the int_term
-temp = unlist(stringr::str_split(bacphy_pred$int_term, "\\."))
+temp = unlist(strsplit(as.character(bacphy_pred$int_term), "\\."))
 temp = matrix(temp, ncol = 3, byrow = TRUE)
 temp = as.data.frame(temp); names(temp) = c("timepoint", "treatment", "phylum")
 bacphy_pred2 = cbind(temp, swd = bacphy_pred$swd, bacphy_pred2)
@@ -72,6 +60,7 @@ bacphy_pred2$treatment = factor(bacphy_pred2$treatment,
 bacphy_pred2$phylum = factor(bacphy_pred2$phylum,
                              levels = levels(bacphy_hi$variable))
 
+## Fig 2e:
 facet_names = c(
   `field` = "dry-down",
   `drought` = "rewet-up",
@@ -103,7 +92,7 @@ bacphy_legend2 = get_legend(
     theme(legend.text = element_text(size = 14),
           legend.title = element_text(size = 16)))
 
-fig2a = ggplot(data = bacphy_pred2[bacphy_pred2$timepoint %in% c("70 days"),])+
+fig2e = ggplot(data = bacphy_pred2[bacphy_pred2$timepoint %in% c("70 days"),])+
   geom_ribbon(aes(x = swd, 
                   ymin = sim_lo, 
                   ymax = sim_hi,
@@ -138,7 +127,8 @@ fig2a = ggplot(data = bacphy_pred2[bacphy_pred2$timepoint %in% c("70 days"),])+
                                 "Chloroflexota",
                                 "Pseudomonadota",
                                 "Verrucomicrobiota"))+
-  labs(x = "SWD", y = "Proportion", title = "(a) Prokaryotes")+
+  scale_y_continuous(labels = function(x) sprintf("%.2f",x))+ # 2dp to be align with fungal plot
+  labs(x = "SWD", y = "Proportion", title = "Prokaryotes")+
   guides(col = "none", fill = "none")+
   theme(axis.text = element_text(size = 14),
         axis.title = element_text(size = 18),
@@ -148,9 +138,9 @@ fig2a = ggplot(data = bacphy_pred2[bacphy_pred2$timepoint %in% c("70 days"),])+
                                   size = 22,
                                   vjust = 2))
 
-fig2a_final = grid.arrange(fig2a, bacphy_legend2, nrow = 1,
-                     widths = c(5,1))
-plot(fig2a_final)
+fig2e_final = grid.arrange(fig2e, bacphy_legend2, nrow = 1,
+                     widths = c(5,3))
+plot(fig2e_final)
 
 ## Fungal phyla ====
 funphy_df = rowsum(t(fun_rare), clean_fun_taxonomy$Phylum)
@@ -192,7 +182,7 @@ funphy_pred = data.frame(swd = rep(seq(min(funphy_hi$swd),
 funphy_pred2 = get_gam_ci(funphy_mod, funphy_pred)
 
 # Breaking apart the int_term
-temp = unlist(stringr::str_split(funphy_pred$int_term, "\\."))
+temp = unlist(strsplit(as.character(funphy_pred$int_term), "\\."))
 temp = matrix(temp, ncol = 3, byrow = TRUE)
 temp = as.data.frame(temp); names(temp) = c("timepoint", "treatment", "phylum")
 funphy_pred2 = cbind(temp, swd = funphy_pred$swd, funphy_pred2)
@@ -216,7 +206,7 @@ funphy_pred2$point_lo = funphy_mod$family$linkinv(funphy_pred2$point_lo)
 funphy_pred2$sim_hi = funphy_mod$family$linkinv(funphy_pred2$sim_hi)
 funphy_pred2$sim_lo = funphy_mod$family$linkinv(funphy_pred2$sim_lo)
 
-## Fig 2b:
+## Fig 2f:
 fun_cols = c("#648FFF",
              "#DC267F",
              "#FFB000")
@@ -230,7 +220,7 @@ funphy_legend2 = get_legend(
     theme(legend.text = element_text(size = 14),
           legend.title = element_text(size = 16)))
 
-fig2b = ggplot(data = funphy_pred2[funphy_pred2$timepoint %in% c("70 days"),])+
+fig2f = ggplot(data = funphy_pred2[funphy_pred2$timepoint %in% c("70 days"),])+
   geom_ribbon(aes(x = swd, 
                   ymin = sim_lo, 
                   ymax = sim_hi,
@@ -249,9 +239,9 @@ fig2b = ggplot(data = funphy_pred2[funphy_pred2$timepoint %in% c("70 days"),])+
                           length = unit(0.3, "cm")))+
   geom_point(data = funphy_hi[funphy_hi$timepoint %in% c("70 days"),],
              aes(x = swd, y = value, col = variable))+
-  facet_wrap(.~treatment*timepoint, nrow = 2,
+  facet_wrap(.~treatment, nrow = 2,
              labeller = as_labeller(facet_names))+
-  labs(x = "SWD", y = "Proportion", title = "(b) Fungi")+
+  labs(x = "SWD", y = "Proportion", title = "Fungi")+
   scale_fill_manual(values = fun_cols,
                     labels = sub("p__", "", levels(funphy_pred2$phylum)))+
   scale_colour_manual(values = fun_cols,
@@ -263,20 +253,14 @@ fig2b = ggplot(data = funphy_pred2[funphy_pred2$timepoint %in% c("70 days"),])+
         plot.title = element_text(hjust = 0.5,
                                   face = "bold",
                                   size = 22,
-                                  vjust = 3))
+                                  vjust = 2))
 
-fig2b_final = grid.arrange(fig2b, funphy_legend2, nrow = 1,
-                     widths = c(5,1))
-plot(fig2b)
+fig2f_final = grid.arrange(fig2f, funphy_legend2, nrow = 1,
+                     widths = c(5,3))
+plot(fig2f)
 
-## Fig. 2: Dominant phyla ====
-fig2 = grid.arrange(fig2a, bacphy_legend2, fig2b, funphy_legend2, 
-                    layout_matrix = rbind(c(NA, NA, NA, NA, NA, NA, NA),
-                                          c(1,NA,2,NA,3,NA, 4)),
-                    heights = c(0.05,1),
-                    widths = c(3,0.1,1.5,0.5,3,0.1,1.5))
-#ggsave("./figures/fig2.svg", fig2, height = 7, width = 12)
-
+# ggsave("./figures/fig2e.svg", fig2e_final, height = 6, width = 6)
+# ggsave("./figures/fig2f.svg", fig2f_final, height = 6, width = 6)
 
 # Additional SI figures (Figs S4-5) ====
 

@@ -101,7 +101,6 @@ clean_fun_lib = apply(clean_fun, 1, sum)
 clean_bac_taxonomy = bac_taxonomy[rownames(bac_taxonomy) %in% colnames(clean_bac),]
 clean_fun_taxonomy = fun_taxonomy[rownames(fun_taxonomy) %in% colnames(clean_fun),]
 
-
 ## Functions
 get_gam_ci = function(my_mod, new_data){
   
@@ -145,6 +144,7 @@ repeat_rarefy_div = function(my_seq, nrep = 100){
   avg_richness = numeric(nrow(my_seq))
   avg_shannon = numeric(nrow(my_seq))
   avg_matrix = matrix(0, nrow = nrow(my_seq), ncol = nrow(my_seq))
+  avg_rare = matrix(0, nrow = nrow(my_seq), ncol = ncol(my_seq))
   
   # Repeatedly rarefying
   for (i in 1:nrep){
@@ -158,40 +158,55 @@ repeat_rarefy_div = function(my_seq, nrep = 100){
     ## Getting diversity values
     temp_richness = apply(temp_rare, 1, function(x) sum(x>0))
     temp_shannon = vegan::diversity(temp_rare, index = "shannon")
-    temp_dist = vegdist(decostand(temp_rare, method = "hellinger"),
+    temp_dist = vegdist(decostand(temp_rare, method = 'total'),
                         method = "bray")
     
     # Calculating averages and storing values
     avg_richness = avg_richness + temp_richness/nrep
     avg_shannon = avg_shannon + temp_shannon/nrep
     avg_matrix = avg_matrix + as.matrix(temp_dist)/nrep
+    avg_rare = avg_rare + temp_rare/nrep
   }
   return(list(avg_matrix = avg_matrix, 
               avg_richness = avg_richness, 
-              avg_shannon = avg_shannon))
+              avg_shannon = avg_shannon,
+              avg_rare = avg_rare))
 }
 
+## Repeated rarefaction for diversity indices
+## To replicate same data in paper exactly (slow)
+set.seed(4123)
+bac_avgdiv = repeat_rarefy_div(clean_bac, 1000)
 
-## Repeated rarefaction of reads
-repeat_rarefy = function(my_seq, nrep = 100){
-  
-  # Finding smallest library
-  lib_sizes = apply(my_seq, 1, sum)
-  
-  # Creating objects to store values
-  avg_matrix = matrix(0, nrow = nrow(my_seq), ncol = ncol(my_seq))
-  
-  # Repeatedly rarefying
-  for (i in 1:nrep){
-    if (i%%5 == 0){
-      cat("running iteration", i, "\n")
-    }
-    
-    ## Rarefy
-    temp_rare = rrarefy(my_seq, sample = min(lib_sizes))
-    
-    ## Getting diversity values
-    avg_matrix = avg_matrix + temp_rare/nrep
-  }
-  return(avg_matrix)
-}
+set.seed(2490)
+fun_avgdiv = repeat_rarefy_div(clean_fun, 1000)
+
+# Quick run (similar results)
+# bac_avgdiv = repeat_rarefy_div(clean_bac, 10)
+# fun_avgdiv = repeat_rarefy_div(clean_fun, 10)
+
+## Saving out values
+main_df$bac_richness = bac_avgdiv$avg_richness # richness
+main_df$bac_shannon = bac_avgdiv$avg_shannon # shannon diversity
+bac_bcavg = as.dist(bac_avgdiv$avg_matrix) # BC distances
+bac_rare = bac_avgdiv$avg_rare # rarefied matrix of counts
+
+main_df$fun_richness = fun_avgdiv$avg_richness
+main_df$fun_shannon = fun_avgdiv$avg_shannon
+fun_bcavg = as.dist(fun_avgdiv$avg_matrix)
+fun_rare = fun_avgdiv$avg_rare
+
+## Getting mean similarity to original community 
+# (i.e., to the controls taken prior to the treatment phase, c1-c3)
+main_df$bac_bccontrol = 1 - apply(as.matrix(bac_bcavg)[,111:113], 1, mean)
+main_df$fun_bccontrol = 1 - apply(as.matrix(fun_bcavg)[,111:113], 1, mean)
+
+# Similarity to their initial states 
+# (i.e., to either the field or drought samples in treatment phase, c4-c9)
+main_df$bac_bcinitial = NA
+main_df$bac_bcinitial[main_df$treatment == "field"] = 1 - apply(as.matrix(bac_bcavg)[,117:119], 1, mean)[main_df$treatment == "field"]
+main_df$bac_bcinitial[main_df$treatment == "drought"] = 1 - apply(as.matrix(bac_bcavg)[,114:116], 1, mean)[main_df$treatment == "drought"]
+
+main_df$fun_bcinitial = NA
+main_df$fun_bcinitial[main_df$treatment == "field"] = 1 - apply(as.matrix(fun_bcavg)[,117:119], 1, mean)[main_df$treatment == "field"]
+main_df$fun_bcinitial[main_df$treatment == "drought"] = 1 - apply(as.matrix(fun_bcavg)[,114:116], 1, mean)[main_df$treatment == "drought"]

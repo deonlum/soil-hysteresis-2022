@@ -175,15 +175,15 @@ repeat_rarefy_div = function(my_seq, nrep = 100){
 
 ## Repeated rarefaction for diversity indices
 ## To replicate same data in paper exactly (slow)
-set.seed(4123)
-bac_avgdiv = repeat_rarefy_div(clean_bac, 1000)
-
-set.seed(2490)
-fun_avgdiv = repeat_rarefy_div(clean_fun, 1000)
+# set.seed(4123)
+# bac_avgdiv = repeat_rarefy_div(clean_bac, 1000)
+# 
+# set.seed(2490)
+# fun_avgdiv = repeat_rarefy_div(clean_fun, 1000)
 
 # Quick run (similar results)
-# bac_avgdiv = repeat_rarefy_div(clean_bac, 10)
-# fun_avgdiv = repeat_rarefy_div(clean_fun, 10)
+bac_avgdiv = repeat_rarefy_div(clean_bac, 10)
+fun_avgdiv = repeat_rarefy_div(clean_fun, 10)
 
 ## Saving out values
 main_df$bac_richness = bac_avgdiv$avg_richness # richness

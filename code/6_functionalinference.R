@@ -1,5 +1,7 @@
 ## Functional inference from amplicon data
 # We'll use picrust2 for 16s and funguild for ITS
+source("./code/initial_setup.R")
+
 library(ggpicrust2)
 library(FUNGuildR)
 
@@ -176,8 +178,18 @@ path_plot = ggplot(data = guild_preds)+
                   fill = treatment), alpha = 0.3)+
   geom_point(data = guild_df[1:110,],
              aes(x = swd, y = pathotroph, colour = treatment))+
-  geom_line(aes(x = swd, y = pathotroph$fit,
-                colour = treatment), linewidth = 1.25)+
+  # Dry-down arrow
+  geom_line(data = guild_preds[guild_preds$treatment == "field",],
+            aes(x = swd, y = pathotroph$fit), colour = mycols[1],
+            linewidth = 2, 
+            arrow = arrow(ends = "last", type = "open", 
+                          length = unit(0.3, "cm")))+
+  # Rewet-up arrow
+  geom_line(data = guild_preds[guild_preds$treatment == "drought",],
+            aes(x = swd, y = pathotroph$fit), colour = mycols[2],
+            linewidth = 2, 
+            arrow = arrow(ends = "first", type = "open", 
+                          length = unit(0.3, "cm")))+
   facet_wrap(.~timepoint, nrow = 1)+
   scale_colour_manual(values = mycols)+
   scale_fill_manual(values = mycols)+
@@ -191,8 +203,18 @@ sym_plot = ggplot(data = guild_preds)+
                   fill = treatment), alpha = 0.3)+
   geom_point(data = guild_df[1:110,],
              aes(x = swd, y = symbiotroph, colour = treatment))+
-  geom_line(aes(x = swd, y = symbiotroph$fit,
-                colour = treatment), linewidth = 1.25)+
+  # Dry-down arrow
+  geom_line(data = guild_preds[guild_preds$treatment == "field",],
+            aes(x = swd, y = symbiotroph$fit), colour = mycols[1],
+            linewidth = 2, 
+            arrow = arrow(ends = "last", type = "open", 
+                          length = unit(0.3, "cm")))+
+  # Rewet-up arrow
+  geom_line(data = guild_preds[guild_preds$treatment == "drought",],
+            aes(x = swd, y = symbiotroph$fit), colour = mycols[2],
+            linewidth = 2, 
+            arrow = arrow(ends = "first", type = "open", 
+                          length = unit(0.3, "cm")))+
   facet_wrap(.~timepoint, nrow = 1)+
   scale_colour_manual(values = mycols)+
   scale_fill_manual(values = mycols)+
@@ -206,13 +228,24 @@ sap_plot = ggplot(data = guild_preds)+
                   fill = treatment), alpha = 0.3)+
   geom_point(data = guild_df[1:110,],
              aes(x = swd, y = saprotroph, colour = treatment))+
-  geom_line(aes(x = swd, y = saprotroph$fit,
-                colour = treatment), linewidth = 1.25)+
+  # Dry-down arrow
+  geom_line(data = guild_preds[guild_preds$treatment == "field",],
+            aes(x = swd, y = saprotroph$fit), colour = mycols[1],
+            linewidth = 2, 
+            arrow = arrow(ends = "last", type = "open", 
+                          length = unit(0.3, "cm")))+
+  # Rewet-up arrow
+  geom_line(data = guild_preds[guild_preds$treatment == "drought",],
+            aes(x = swd, y = saprotroph$fit), colour = mycols[2],
+            linewidth = 2, 
+            arrow = arrow(ends = "first", type = "open", 
+                          length = unit(0.3, "cm")))+
   facet_wrap(.~timepoint, nrow = 1)+
   scale_colour_manual(values = mycols)+
   scale_fill_manual(values = mycols)+
   lims(y = c(0,1))+
   guides(colour = "none", fill = "none")
+
 
 figS14 = grid.arrange(path_plot,
                       sym_plot,
